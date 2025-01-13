@@ -6,6 +6,8 @@ import pandas as pd
 
 import os
 
+from flask import Flask
+
 
 subject_color_map = {
         "language_and_literature": "red",
@@ -76,7 +78,8 @@ scatter_fig.update_layout(
 
 # Initialize the Dash app
 # app = dash.Dash(__name__)
-app = dash.Dash(__name__)
+flask_server = Flask(__name__)
+app = dash.Dash(__name__, server=flask_server)
 server = app.server
 
 # Define the layout
@@ -90,4 +93,4 @@ app.layout = html.Div([
 
 # Run the app
 if __name__ == '__main__':
-    app.run_server(debug=False)
+    app.run_server(debug=True)
