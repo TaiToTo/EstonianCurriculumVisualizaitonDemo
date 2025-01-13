@@ -4,6 +4,8 @@ import plotly.graph_objects as go
 import numpy as np
 import pandas as pd
 
+import os
+
 
 subject_color_map = {
         "language_and_literature": "red",
@@ -20,8 +22,9 @@ subject_color_map = {
         "entrepreneurship_studies": "lime",
     }
 
+base_path = os.path.dirname(__file__)
 
-df = pd.read_csv("data/embedding_2d_est_basic_school.csv")
+df = pd.read_csv(os.path.join(base_path, "data/embedding_2d_est_basic_school.csv"))
 
 color_list = [subject_color_map[row["subject"]] for idx, row in df.iterrows()]
 hover_texts = [row["text"].replace("\n", "<br>") for idx, row in df.iterrows()]
@@ -72,9 +75,9 @@ scatter_fig.update_layout(
 )
 
 # Initialize the Dash app
+# app = dash.Dash(__name__)
 app = dash.Dash(__name__)
-app = app.server
-
+server = app.server
 
 # Define the layout
 app.layout = html.Div([
