@@ -73,6 +73,8 @@ scatter_fig.update_layout(
 
 # Initialize the Dash app
 app = dash.Dash(__name__)
+app = app.server
+
 
 # Define the layout
 app.layout = html.Div([
@@ -85,4 +87,4 @@ app.layout = html.Div([
 
 # Run the app
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server(debug=False)
