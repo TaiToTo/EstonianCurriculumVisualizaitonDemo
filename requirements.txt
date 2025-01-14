@@ -1,4 +1,3 @@
-dash 
+streamlit
 plotly
 pandas
-flask
