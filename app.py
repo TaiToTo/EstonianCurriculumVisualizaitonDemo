@@ -112,20 +112,38 @@ query_text = st.text_input("Write a query to search contents of curriculum:", ""
 if query_text:
     df_queried = query_vector(query_text)
 
+    colors = [subject_color_map[cat] for cat in df_queried['subject']]
+
+
     # Add bar plot to the first column
     fig.add_trace(
         go.Bar(
-            y=df_queried['text'].map(lambda x: x[:30] + " ..."),
-            x=df_queried['certainty'],
+            # y=df_queried['text'].map(lambda x: x),
+            y=[idx for idx in range(len(df_queried))],
+            x=df_queried['certainty'][::-1],
             orientation='h',
             textposition='outside',
-            name="Horizontal Barplot",
+            marker=dict(color=colors[::-1])
         ),
         row=1,
         col=1
     )
 
+    fig.update_layout(
+        xaxis=dict(
+            title='Relavance Score',  # Label for the x-axis
+            range=[0.5, 0.8]
+        ),
+        yaxis=dict(
+            tickmode='array',
+            tickvals=[idx for idx in range(len(df_queried))],  # Custom y-ticks
+            ticktext=df_queried['text'][::-1].map(lambda x: x[:30])  # Use custom labels for y-axis
+        )
+    )
+
     unique_subject_list = df_queried["subject"].unique().tolist()
+
+    colors = [subject_color_map[cat] for cat in unique_subject_list + df_queried['subject'].tolist()]
 
     # Add treemap to the second column
     fig.add_trace(
@@ -133,7 +151,7 @@ if query_text:
             labels=unique_subject_list + df_queried["text"].tolist(),
             parents=[""]*len(unique_subject_list) + df_queried["subject"].tolist(),  # Since "path" isn't directly supported, set parents to empty or adjust accordingly.
             values=[0]*len(unique_subject_list) + df_queried["certainty"].tolist(),
-            # marker=dict(colors=df_queried["subject"])
+            marker=dict(colors=colors)
         ),
         row=1,
         col=2
