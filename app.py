@@ -10,8 +10,10 @@ from weaviate.classes.init import Auth
 from weaviate.classes.query import MetadataQuery
 
 
+import sys
 import os
 from dotenv import load_dotenv
+
 load_dotenv()
 
 # Subject color map
@@ -34,35 +36,41 @@ weaviate_url = os.environ["WEAVIATE_URL"]
 weaviate_api_key = os.environ["WEAVIATE_API_KEY"]
 cohere_api_key = os.environ["COHERE_API_KEY"]
 
-class_name = "CurriculumDemo"
+def query_vector(query_text):
+    class_name = "CurriculumDemo"
+        # Connect to Weaviate Cloud
+    client = weaviate.connect_to_weaviate_cloud(
+        cluster_url=weaviate_url,                                    # Replace with your Weaviate Cloud URL
+        auth_credentials=Auth.api_key(weaviate_api_key),             # Replace with your Weaviate Cloud key
+        headers={"X-Cohere-Api-Key": cohere_api_key},           # Replace with your Cohere API key
+    )
 
-    # Connect to Weaviate Cloud
-client = weaviate.connect_to_weaviate_cloud(
-    cluster_url=weaviate_url,                                    # Replace with your Weaviate Cloud URL
-    auth_credentials=Auth.api_key(weaviate_api_key),             # Replace with your Weaviate Cloud key
-    headers={"X-Cohere-Api-Key": cohere_api_key},           # Replace with your Cohere API key
-)
+    collection = client.collections.get("CurriculumDemo")
 
-collection = client.collections.get("CurriculumDemo")
+    response = collection.query.near_text(
+        query=query_text,
+        limit=30, 
+        return_metadata=MetadataQuery(distance=True, certainty=True)
+    )
 
+    row_dict_list = []
+    for obj in response.objects:
+        row_dict = {}
+        row_dict["text"] = obj.properties["text"]
+        row_dict["subject"] = obj.properties["subject"]
+        row_dict["certainty"] = obj.metadata.certainty
+        row_dict["distance"] = obj.metadata.distance
+        
+        row_dict_list.append(row_dict)
 
-response = collection.query.near_text(
-    query="humanity",
-    limit=30, 
-    return_metadata=MetadataQuery(distance=True, certainty=True)
-)
+    client.close()  # Free up resources
 
-row_dict_list = []
-for obj in response.objects:
-    row_dict = {}
-    row_dict["text"] = obj.properties["text"]
-    row_dict["subject"] = obj.properties["subject"]
-    row_dict["certainty"] = obj.metadata.certainty
-    row_dict["distance"] = obj.metadata.distance
+    df_queried = pd.DataFrame(row_dict_list, columns=["text", "subject", "certainty", "distance"])
+    df_queried["text"] = df_queried["text"].map(lambda x: x.replace("\n", "<br>") )
+    df_queried["dummy"] = df_queried["text"].map(lambda x: "")
     
-    row_dict_list.append(row_dict)
+    return df_queried
 
-client.close()  # Free up resources
 
 # Load data
 base_path = os.path.dirname(__file__)
@@ -84,12 +92,7 @@ hover_texts = [row["text"].replace("\n", "<br>") for _, row in df.iterrows()]
 #         name=subject
 #     ))
 
-# df_queried = pd.DataFrame([elem.properties for elem in response.objects], columns=["text", "paragraph_idx", "subject"])
-df_queried = pd.DataFrame(row_dict_list, columns=["text", "subject", "certainty", "distance"])
-# df_queried = df_queried.sort_values(by="certainty", ascending=False)
-df_queried["text"] = df_queried["text"].map(lambda x: x.replace("\n", "<br>") )
-df_queried["dummy"] = df_queried["text"].map(lambda x: "")
-print(df_queried)
+st.title("Estonian Basic School Curriculum Analyzer Demo")
 
 # Create the subplots with an additional row for the bottom graph
 fig = make_subplots(
@@ -97,39 +100,62 @@ fig = make_subplots(
     cols=2,  # Keep the columns as 2 for the top row
     column_widths=[0.2, 0.8],  # Set column widths for the first row
     row_heights=[0.6, 0.4],  # Adjust row heights (optional)
-    subplot_titles=("Horizontal Barplot", "Treemap", "Line Plot Example"),  # Titles for all subplots
+    subplot_titles=("The most relevant texts", "Searched texts grouped by subjects", "Semantic map of texts"),  # Titles for all subplots
     specs=[
         [{"type": "xy"}, {"type": "domain"}],  # First row specs
         [{"colspan": 2}, None],  # Second row spans both columns
     ]
 )
 
-# Add bar plot to the first column
-fig.add_trace(
-    go.Bar(
-        y=df_queried['text'].map(lambda x: x[:30] + " ...").iloc[::-1],
-        x=df_queried['certainty'].iloc[::-1],
-        orientation='h',
-        textposition='outside',
-        name="Horizontal Barplot",
-    ),
-    row=1,
-    col=1
-)
+query_text = st.text_input("Write a query to search contents of curriculum:", "")
 
-unique_subject_list = df_queried["subject"].unique().tolist()
+if query_text:
+    df_queried = query_vector(query_text)
 
-# Add treemap to the second column
-fig.add_trace(
-    go.Treemap(
-        labels=unique_subject_list + df_queried["text"].tolist(),
-        parents=[""]*len(unique_subject_list) + df_queried["subject"].tolist(),  # Since "path" isn't directly supported, set parents to empty or adjust accordingly.
-        values=[0]*len(unique_subject_list) + df_queried["certainty"].tolist(),
-        # marker=dict(colors=df_queried["subject"])
-    ),
-    row=1,
-    col=2
-)
+    # Add bar plot to the first column
+    fig.add_trace(
+        go.Bar(
+            y=df_queried['text'].map(lambda x: x[:30] + " ..."),
+            x=df_queried['certainty'],
+            orientation='h',
+            textposition='outside',
+            name="Horizontal Barplot",
+        ),
+        row=1,
+        col=1
+    )
+
+    unique_subject_list = df_queried["subject"].unique().tolist()
+
+    # Add treemap to the second column
+    fig.add_trace(
+        go.Treemap(
+            labels=unique_subject_list + df_queried["text"].tolist(),
+            parents=[""]*len(unique_subject_list) + df_queried["subject"].tolist(),  # Since "path" isn't directly supported, set parents to empty or adjust accordingly.
+            values=[0]*len(unique_subject_list) + df_queried["certainty"].tolist(),
+            # marker=dict(colors=df_queried["subject"])
+        ),
+        row=1,
+        col=2
+    )
+
+else:
+    # Add bar plot to the first column
+    fig.add_trace(
+        go.Bar(
+        ),
+        row=1,
+        col=1
+    )
+
+    # Add treemap to the second column
+    fig.add_trace(
+        go.Treemap(
+        ),
+        row=1,
+        col=2
+    )
+
 
 
 # Add a line plot to the third subplot (row 2, col 1, spanning both columns)
@@ -152,7 +178,7 @@ fig.add_trace(
 )
 
 fig.update_layout(showlegend=False)
-fig.update_layout(height=1000, width=1500, title_text="Example of Subplots with Full-Width Bottom Graph")
+fig.update_layout(height=1000, width=1500)
 
 # Streamlit app
 st.plotly_chart(fig, use_container_width=True)

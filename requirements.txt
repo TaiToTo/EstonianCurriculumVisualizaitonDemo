@@ -1,3 +1,5 @@
 streamlit
 plotly
 pandas
+python-dotenv
+weaviate-client
