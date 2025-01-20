@@ -108,11 +108,9 @@ fig_1 = make_subplots(
     subplot_titles=(
         "The most relevant texts", 
         "Searched texts grouped by subjects", 
-        # "Semantic map of texts"
         ),  # Titles for all subplots
     specs=[
         [{"type": "xy"}, {"type": "domain"}],  # First row specs
-        # [{"colspan": 2}, None],  # Second row spans both columns
     ]
 )
 
@@ -184,51 +182,15 @@ else:
         col=2
     )
 
-# Create the subplots with an additional row for the bottom graph
-fig_2 = make_subplots(
-    rows=1,  # Increase the rows to 2
-    cols=1,  # Keep the columns as 2 for the top row
-    subplot_titles=(
-        # "The most relevant texts", 
-        # "Searched texts grouped by subjects", 
-        "Semantic map of texts"
-        ),  # Titles for all subplots
-    # specs=[
-    #     [{"type": "xy"}, {"type": "domain"}],  # First row specs
-    #     [{"colspan": 2}, None],  # Second row spans both columns
-    # ]
+fig_2 = px.scatter(
+    df, 
+    x="x", 
+    y="y", 
+    color="subject",  # Color by the subject column
+    color_discrete_map=subject_color_map,  # Apply the custom color mapping
+    hover_data=['text'],  # Replace with your hover text column name
+    title="Scatter Plot with Legend"
 )
-
-# Add a line plot to the third subplot (row 2, col 1, spanning both columns)
-fig_2.add_trace(
-    go.Scatter(
-        x=df["x"],
-        y=df["y"],
-        mode='markers',
-        marker=dict(
-            color=color_list,
-            size=6, 
-            opacity=0.5
-        ),
-        text=hover_texts,  # Add hover text
-        hoverinfo='text',  # Display only the hover text
-        name="Scatter Points", 
-    ),
-    row=1,
-    col=1
-)
-
-# Add legend items for each subject
-for subject, color in subject_color_map.items():
-    fig_2.add_trace(go.Scatter(
-        x=[None], y=[None],  # Dummy points for legend
-        mode='markers',
-        marker=dict(size=10, color=color),
-        name=subject
-    ))
-
-# fig.update_layout(showlegend=False)
-# fig.update_layout(height=1000, width=1500)
 
 # Streamlit app
 st.plotly_chart(fig_1, use_container_width=True)
