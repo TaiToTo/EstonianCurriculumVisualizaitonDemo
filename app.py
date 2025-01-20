@@ -198,6 +198,14 @@ fig_2 = px.scatter(
     title="Scatter Plot with Legend"
 )
 
+# Remove x and y axes labels
+fig_2.update_layout(
+    xaxis_title="",  # Set x-axis label to an empty string
+    yaxis_title="",   # Set y-axis label to an empty string
+    xaxis=dict(showticklabels=False),  # Remove x-axis tick labels
+    yaxis=dict(showticklabels=False)   # Remove y-axis tick labels
+)
+
 # Streamlit app
 st.plotly_chart(fig_1, use_container_width=True)
 
@@ -208,7 +216,7 @@ query_text = st.text_input("Write a query to find reference texts", placeholder=
 task_text = st.text_input("Write a task based on the texts queried:", placeholder="Type something here...")
 
 # Button to combine texts
-if st.button("Combine Texts"):
+if st.button("Make a prompt"):
     if query_text and task_text:
         # Combine the texts and output the result
         generated_text, ref_list = get_rag_answer_and_sources(query_text, task_text, limit=2)
