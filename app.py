@@ -72,7 +72,7 @@ def query_vector(query_text):
     return df_queried
 
 
-def get_rag_answer_and_sources(question, limit=2):
+def get_rag_answer_and_sources(query_text, task_text, limit=2):
     class_name = "CurriculumDemo"
         # Connect to Weaviate Cloud
     client = weaviate.connect_to_weaviate_cloud(
@@ -84,11 +84,16 @@ def get_rag_answer_and_sources(question, limit=2):
     collection = client.collections.get("CurriculumDemo")
 
     response = collection.generate.near_text(
-        query="biology",
+        query=query_text,
         limit=5,
-        grouped_task="Write a tweet with emojis about these facts."
+        grouped_task=task_text
     )
 
+    reference_text_list = [obj.properties["text"] for obj in response.objects]
+
+    generated_text = response.generated
+
+    return generated_text, reference_text_list
 
 # Load data
 base_path = os.path.dirname(__file__)
@@ -113,6 +118,7 @@ fig_1 = make_subplots(
         [{"type": "xy"}, {"type": "domain"}],  # First row specs
     ]
 )
+st.subheader("1. Search curriculum")
 
 query_text = st.text_input("Write a query to search contents of curriculum:", "")
 
@@ -195,5 +201,23 @@ fig_2 = px.scatter(
 # Streamlit app
 st.plotly_chart(fig_1, use_container_width=True)
 
+st.subheader("2. Ask question of curriuclum saved")
+
+# Input fields for two texts
+query_text = st.text_input("Write a query to find reference texts", placeholder="Type something here...")
+task_text = st.text_input("Write a task based on the texts queried:", placeholder="Type something here...")
+
+# Button to combine texts
+if st.button("Combine Texts"):
+    if query_text and task_text:
+        # Combine the texts and output the result
+        generated_text, ref_list = get_rag_answer_and_sources(query_text, task_text, limit=2)
+
+        st.subheader("Generated Answer:")
+        st.write(generated_text)
+    else:
+        st.warning("Please provide both texts to combine.")
+
+st.subheader("3. Visualize relations of curriculum contents")
 st.plotly_chart(fig_2, use_container_width=True)
 
