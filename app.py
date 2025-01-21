@@ -67,7 +67,7 @@ def query_vectors(query_text, search_limit):
     return df_queried
 
 
-def get_rag_answer_and_sources(query_text, task_text, limit=2):
+def get_rag_answer_and_sources(query_text, task_text, search_limit):
     class_name = "CurriculumDemo"
     # Connect to Weaviate Cloud
     client = weaviate.connect_to_weaviate_cloud(
@@ -80,7 +80,7 @@ def get_rag_answer_and_sources(query_text, task_text, limit=2):
 
     response = collection.generate.near_text(
         query=query_text,
-        limit=5,
+        limit=search_limit,
         grouped_task=task_text, 
         return_metadata=MetadataQuery(distance=True, certainty=True)
     )
