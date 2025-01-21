@@ -17,22 +17,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# # Subject color map
-# subject_color_map = {
-#     "language_and_literature": "red",
-#     "foreign_languages": "purple",
-#     "mathematics": "blue",
-#     "natural_science": "green",
-#     "social_studies": "orange",
-#     "art": "pink",
-#     "technology": "cyan",
-#     "physical_education": "yellow",
-#     "religious_studies": "brown",
-#     "informatics": "teal",
-#     "career_education": "magenta",
-#     "entrepreneurship_studies": "lime",
-# }
-
 # Load from the JSON file
 with open("subject_color_map.json", "r") as f:
     subject_color_map = json.load(f)
