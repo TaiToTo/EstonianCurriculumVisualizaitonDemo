@@ -124,14 +124,26 @@ st.title("Estonian School Curriculum Analyzer Demo")
 st.header("Purpose of This Demo")
 st.write("""
 After the ChatGPT sensation, introduction of generative AI is also actively being discussed in educaiton domain.
-However it seems like the "generative" aspect of generative AI is mainly discussed.
-Regardless of its name, generating texts is only a part of advantages of generative AI. 
-Features 
-Through this demo and presentations, we would like to emphasize 
-- How efficiently texts with contents of interest can be found. 
-- How 
+However it seems like the "generative" aspect of generative AI is mainly discussed, for example chatbot or text generation. 
+Regardless of its name, generating contents is only a part of advantages that generative AI posseses. 
+After the times when people typed in commands like spelss on black screesn or when peopl clicked or dragged files to find information, now they can be found with relatively fuzzy commands in natural langauge. 
+And this "searching" feature of generative AI is something that should be on under spotlight more when we think about how to anlyse school curriculums.
 """)
 
+col1, col2, col3 = st.columns([1, 2, 1])  # Create three columns, with the center column being larger
+with col2:
+    st.image("static/generative_AI_two_aspects.jpg", caption="Image 1", use_container_width =True)
+
+st.write("""
+Through this demo and presentations, we would like to emphasize the following points.
+- How efficiently texts of interest can be found by utilizing generative AI. 
+- How analysis on contents of searched texts can be automated.
+- How AI techniques can visulize relations of texts more intuitively.
+- Importance of preparation of texts from curriculums in an organized way.  
+""")
+
+st.write("""We hope this demo shows that seemingly magical behaviors of generative AI are just combinations of the limited funcitonalities: searching texts and conducting commands based on the searched texts. 
+And by knowing the engineering behind the magic, it would be great if the readers could come up with practical methods of curriculum analysis.""")
 
 st.header("Preparation of data")
 st.write("""
@@ -170,7 +182,16 @@ fig_1 = make_subplots(
 
 st.header("Search the curriculum")
 
-query_text = st.text_input("Write a query to search contents of curriculum:", "")
+col1, col2, col3 = st.columns([1, 2, 1])  # Create three columns, with the center column being larger
+with col2:
+    st.image("static/text_query.jpg", caption="Image 1", use_container_width =True)
+
+st.write("""
+After texts are store in a database, texts that are the most relavant or semantically the closest to an input query can be found from the database. 
+The following graphs show queried texts and their relavance scores to the query. They are also grouped by subjects at the right side. 
+""")
+
+query_text = st.text_input("Write a query to search contents of curriculum:", "Data literacy")
 
 text_search_limit = st.slider(
     "Select a number of texts to query",  # Label for the slider
@@ -260,16 +281,27 @@ else:
 st.plotly_chart(fig_1, use_container_width=True)
 
 st.header("Make a prompt with queried texts")
+
+col1, col2, col3 = st.columns([1, 2, 1])  # Create three columns, with the center column being larger
+with col2:
+    st.image("static/RAG.jpg", caption="Image 1", use_container_width =True)
+
+st.write("""
+The queried texts can be processed with another prompt. 
+In the demo below, a query for searching texts from the databae can be set first. 
+And various tasks can be conducted on the texts searched. 
+""")
+
 rag_search_limit = st.slider("Select a number of texts to use for generating an answer", min_value=0, max_value=10, value=1, step=1)
 # Input fields for two texts
-query_text = st.text_input("Write a query to find reference texts", placeholder="Type something here...")
-task_text = st.text_input("Write a prompt based on the texts queried:", placeholder="Type something here...")
+query_text = st.text_input("Write a query to find reference texts", "Data literacy", placeholder="Type something here...")
+task_text = st.text_input("Write a prompt based on the texts queried:", "Extract competency from the text", placeholder="Type something here...")
 
 # Button to combine texts
 if st.button("Make a prompt"):
     if query_text and task_text:
         # Combine the texts and output the result
-        generated_text, df_ref = get_rag_answer_and_sources(query_text, task_text, limit=rag_search_limit)
+        generated_text, df_ref = get_rag_answer_and_sources(query_text, task_text, rag_search_limit)
 
         st.markdown("### Generated answer:")
         st.write(generated_text)
@@ -338,10 +370,12 @@ fig_3.update_layout(
 
 
 st.header("Intermediate results for interdisciplinary analysis")
-
+col1, col2, col3 = st.columns([1, 2, 1])  # Create three columns, with the center column being larger
+with col2:
+    st.image("static/interdisciplinary_analysis.jpg", caption="Image 1", use_container_width =True)
 st.write("""
 The ideas so far are nothing new, and they developed rapidly in the business domain last some years. 
-If 
+But this idea
 """)
 st.plotly_chart(fig_3, use_container_width=True)
 
