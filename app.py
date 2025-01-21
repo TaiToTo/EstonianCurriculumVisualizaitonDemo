@@ -25,7 +25,7 @@ weaviate_url = os.environ["WEAVIATE_URL"]
 weaviate_api_key = os.environ["WEAVIATE_API_KEY"]
 cohere_api_key = os.environ["COHERE_API_KEY"]
 
-def query_vector(query_text):
+def query_vector(query_text, search_limit=10):
     class_name = "CurriculumDemo"
         # Connect to Weaviate Cloud
     client = weaviate.connect_to_weaviate_cloud(
@@ -38,7 +38,7 @@ def query_vector(query_text):
 
     response = collection.query.near_text(
         query=query_text,
-        limit=30, 
+        limit=search_limit, 
         return_metadata=MetadataQuery(distance=True, certainty=True)
     )
 
@@ -47,6 +47,7 @@ def query_vector(query_text):
         row_dict = {}
         row_dict["text"] = obj.properties["text"]
         row_dict["subject"] = obj.properties["subject"]
+        row_dict["paragraph_idx"] = int(obj.properties["paragraph_idx"])
         row_dict["certainty"] = obj.metadata.certainty
         row_dict["distance"] = obj.metadata.distance
         
@@ -54,16 +55,22 @@ def query_vector(query_text):
 
     client.close()  # Free up resources
 
-    df_queried = pd.DataFrame(row_dict_list, columns=["text", "subject", "certainty", "distance"])
+    df_queried = pd.DataFrame(row_dict_list, columns=["text", "subject", "certainty", "distance", "paragraph_idx"])
     df_queried["text"] = df_queried["text"].map(lambda x: x.replace("\n", "<br>") )
-    df_queried["dummy"] = df_queried["text"].map(lambda x: "")
-    
+
+    df_queried["hover_text"] = df_queried.apply(
+        lambda x: "<b>Relevance:</b> {:.3f}<br><b>Paragraph idx:</b> {}<br><b>Paragraph idx:</b> {}<br>{}".format(x["certainty"], x["subject"], x["paragraph_idx"], x["text"]),
+        axis=1
+    )
+
+    print(df_queried[["text", "subject", "certainty"]])
+
     return df_queried
 
 
 def get_rag_answer_and_sources(query_text, task_text, limit=2):
     class_name = "CurriculumDemo"
-        # Connect to Weaviate Cloud
+    # Connect to Weaviate Cloud
     client = weaviate.connect_to_weaviate_cloud(
         cluster_url=weaviate_url,                                    # Replace with your Weaviate Cloud URL
         auth_credentials=Auth.api_key(weaviate_api_key),             # Replace with your Weaviate Cloud key
@@ -84,8 +91,12 @@ def get_rag_answer_and_sources(query_text, task_text, limit=2):
 
     return generated_text, reference_text_list
 
+
+st.set_page_config(layout="wide")
+
 # Load data
 base_path = os.path.dirname(__file__)
+
 df = pd.read_csv(os.path.join(base_path, "data/embedding_2d_est_basic_school.csv"))
 
 # Generate color list and hover texts
@@ -98,7 +109,7 @@ st.title("Estonian Basic School Curriculum Analyzer Demo")
 fig_1 = make_subplots(
     rows=1,  # Increase the rows to 2
     cols=2,  # Keep the columns as 2 for the top row
-    column_widths=[0.3, 0.7],  # Set column widths for the first row
+    column_widths=[0.2, 0.8],  # Set column widths for the first row
     subplot_titles=(
         "The most relevant texts", 
         "Searched texts grouped by subjects", 
@@ -107,15 +118,17 @@ fig_1 = make_subplots(
         [{"type": "xy"}, {"type": "domain"}],  # First row specs
     ]
 )
+
 st.subheader("1. Search curriculum")
 
 query_text = st.text_input("Write a query to search contents of curriculum:", "")
+
+search_limit = 30
 
 if query_text:
     df_queried = query_vector(query_text)
 
     colors = [subject_color_map[cat] for cat in df_queried['subject']]
-
 
     # Add bar plot to the first column
     fig_1.add_trace(
@@ -125,7 +138,9 @@ if query_text:
             x=df_queried['certainty'][::-1],
             orientation='h',
             textposition='outside',
-            marker=dict(color=colors[::-1])
+            marker=dict(color=colors[::-1]), 
+            hovertext=df_queried['hover_text'][::-1], 
+            hoverinfo='text' 
         ),
         row=1,
         col=1
@@ -140,7 +155,7 @@ if query_text:
         yaxis=dict(
             tickmode='array',
             tickvals=[idx for idx in range(len(df_queried))],  # Custom y-ticks
-            ticktext=df_queried['text'][::-1].map(lambda x: x[:30])  # Use custom labels for y-axis
+            ticktext=df_queried['text'][::-1].map(lambda x: x[:30] + "...")  # Use custom labels for y-axis
         )
     )
 
@@ -154,10 +169,24 @@ if query_text:
             labels=unique_subject_list + df_queried["text"].tolist(),
             parents=[""]*len(unique_subject_list) + df_queried["subject"].tolist(),  # Since "path" isn't directly supported, set parents to empty or adjust accordingly.
             values=[0]*len(unique_subject_list) + df_queried["certainty"].tolist(),
-            marker=dict(colors=colors)
+            marker=dict(colors=colors), 
+            hovertext=unique_subject_list + df_queried['hover_text'].tolist(), 
+            hoverinfo='text' 
         ),
         row=1,
         col=2
+    )
+
+        # Adjust the figure layout for height
+    fig_1.update_layout(
+        height=750,  # Set the height of the figure (increase as needed)
+        # uniformtext=dict(
+        #         minsize=12,  # Increase font size for the text inside the treemap
+        #         mode="show"
+        #     )
+        hoverlabel=dict(
+            align="left"  # Left-align the hover text
+        )
     )
 
 else:
@@ -184,7 +213,7 @@ fig_2 = px.scatter(
     color="subject",  # Color by the subject column
     color_discrete_map=subject_color_map,  # Apply the custom color mapping
     hover_data=['text'],  # Replace with your hover text column name
-    title="Scatter Plot with Legend"
+    title="Semantic Map of Texts in the Database"
 )
 
 # Remove x and y axes labels
@@ -192,7 +221,11 @@ fig_2.update_layout(
     xaxis_title="",  # Set x-axis label to an empty string
     yaxis_title="",   # Set y-axis label to an empty string
     xaxis=dict(showticklabels=False),  # Remove x-axis tick labels
-    yaxis=dict(showticklabels=False)   # Remove y-axis tick labels
+    yaxis=dict(showticklabels=False),   # Remove y-axis tick labels
+    height=750,  # Set the height of the figure (increase as needed)
+    hoverlabel=dict(
+            align="left"  # Left-align the hover text
+        )
 )
 
 # Streamlit app
@@ -215,6 +248,6 @@ if st.button("Make a prompt"):
     else:
         st.warning("Please provide both texts to combine.")
 
-st.subheader("3. Visualize relations of curriculum contents")
+st.subheader("3. Intermediate results for interdisciplinary analysis")
 st.plotly_chart(fig_2, use_container_width=True)
 
