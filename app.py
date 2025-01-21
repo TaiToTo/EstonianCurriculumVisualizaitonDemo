@@ -13,8 +13,9 @@ from weaviate.classes.query import MetadataQuery
 import sys
 import os
 import json
-from dotenv import load_dotenv
 
+# Needed when you run this locally
+from dotenv import load_dotenv
 load_dotenv()
 
 # Load from the JSON file
@@ -115,13 +116,43 @@ st.set_page_config(layout="wide")
 # Load data
 base_path = os.path.dirname(__file__)
 
-df = pd.read_csv(os.path.join(base_path, "data/embedding_2d_est_basic_school.csv"))
-
-# Generate color list and hover texts
-color_list = [subject_color_map[row["subject"]] for _, row in df.iterrows()]
-hover_texts = [row["text"].replace("\n", "<br>") for _, row in df.iterrows()]
+df_scatter = pd.read_csv(os.path.join(base_path, "data/embedding_2d_est_basic_school.csv"))
+df_scatter["hover_text"] = df_scatter["text"].replace("\n", "<br>")
 
 st.title("Estonian School Curriculum Analyzer Demo")
+
+st.header("Purpose of This Demo")
+st.write("""
+After the ChatGPT sensation, introduction of generative AI is also actively being discussed in educaiton domain.
+However it seems like the "generative" aspect of generative AI is mainly discussed.
+Regardless of its name, generating texts is only a part of advantages of generative AI. 
+Features 
+Through this demo and presentations, we would like to emphasize 
+- How efficiently texts with contents of interest can be found. 
+- How 
+""")
+
+
+st.header("Preparation of data")
+st.write("""
+To utilize generative AI in administrative curriculum analysis, documents need to be divided into smaller text units and stored in a database after being processed by a generative AI model.
+Each text is converted to a numerical expression so that generative AI models can search it easitly, which is called a vector or an embedding. 
+""")
+
+col1, col2, col3 = st.columns([1, 2, 1])  # Create three columns, with the center column being larger
+with col2:
+    st.image("static/embedding_split.png", caption="Image 1", use_container_width =True)
+
+st.write("""
+In this demo, the **national curricula** provided by the [Estonian Ministry of Education and Research](https://www.hm.ee/en/national-curricula) are used. The texts are divided roughly paragraph by paragraph and stored in the database with tags, such as **"subject"** or **"paragraph number"**, for efficient analysis and retrieval.
+""")
+
+col1, col2 = st.columns([1, 1])  # Create three columns, with the center column being larger
+with col1:
+    st.image("static/est_basic_school_nat_cur_2014_appendix_1_final-images-0.jpg", caption="Image 2", use_container_width =True)
+
+with col2:
+    st.image("static/est_basic_school_nat_cur_2014_appendix_1_final-images-1.jpg", caption="Image 2", use_container_width =True)
 
 # Create the subplots with an additional row for the bottom graph
 fig_1 = make_subplots(
@@ -137,7 +168,7 @@ fig_1 = make_subplots(
     ]
 )
 
-st.header("Search curriculum")
+st.header("Search the curriculum")
 
 query_text = st.text_input("Write a query to search contents of curriculum:", "")
 
@@ -228,17 +259,11 @@ else:
 # Streamlit app
 st.plotly_chart(fig_1, use_container_width=True)
 
-st.header("Ask question of curriuclum saved")
-rag_search_limit = st.slider(
-    "Select a number of texts to use for generating the answer",  # Label for the slider
-    min_value=0,               # Minimum value of the slider
-    max_value=10,             # Maximum value of the slider
-    value=1,                  # Default value
-    step=1                     # Step size
-)
+st.header("Make a prompt with queried texts")
+rag_search_limit = st.slider("Select a number of texts to use for generating an answer", min_value=0, max_value=10, value=1, step=1)
 # Input fields for two texts
 query_text = st.text_input("Write a query to find reference texts", placeholder="Type something here...")
-task_text = st.text_input("Write a task based on the texts queried:", placeholder="Type something here...")
+task_text = st.text_input("Write a prompt based on the texts queried:", placeholder="Type something here...")
 
 # Button to combine texts
 if st.button("Make a prompt"):
@@ -289,12 +314,13 @@ if st.button("Make a prompt"):
 
 
 fig_3 = px.scatter(
-    df, 
+    df_scatter, 
     x="x", 
     y="y", 
     color="subject",  # Color by the subject column
     color_discrete_map=subject_color_map,  # Apply the custom color mapping
-    hover_data=['text'],  # Replace with your hover text column name
+    hover_data={"hover_text": True, "paragraph_idx": False, "text": False, "subject":False, "x": False, "y": False},  # Replace with your hover text column name
+    hover_name ="hover_text", 
     title="Semantic map of texts in the database"
 )
 
@@ -304,7 +330,7 @@ fig_3.update_layout(
     yaxis_title="",   # Set y-axis label to an empty string
     xaxis=dict(showticklabels=False),  # Remove x-axis tick labels
     yaxis=dict(showticklabels=False),   # Remove y-axis tick labels
-    height=750,  # Set the height of the figure (increase as needed)
+    height=700,  # Set the height of the figure (increase as needed)
     hoverlabel=dict(
             align="left"  # Left-align the hover text
         )
@@ -312,5 +338,10 @@ fig_3.update_layout(
 
 
 st.header("Intermediate results for interdisciplinary analysis")
+
+st.write("""
+The ideas so far are nothing new, and they developed rapidly in the business domain last some years. 
+If 
+""")
 st.plotly_chart(fig_3, use_container_width=True)
 
