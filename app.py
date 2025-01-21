@@ -25,7 +25,7 @@ weaviate_url = os.environ["WEAVIATE_URL"]
 weaviate_api_key = os.environ["WEAVIATE_API_KEY"]
 cohere_api_key = os.environ["COHERE_API_KEY"]
 
-def query_vector(query_text, search_limit=10):
+def query_vectors(query_text, search_limit):
     class_name = "CurriculumDemo"
         # Connect to Weaviate Cloud
     client = weaviate.connect_to_weaviate_cloud(
@@ -62,8 +62,6 @@ def query_vector(query_text, search_limit=10):
         lambda x: "<b>Relevance:</b> {:.3f}<br><b>Paragraph idx:</b> {}<br><b>Paragraph idx:</b> {}<br>{}".format(x["certainty"], x["subject"], x["paragraph_idx"], x["text"]),
         axis=1
     )
-
-    print(df_queried[["text", "subject", "certainty"]])
 
     return df_queried
 
@@ -123,10 +121,17 @@ st.subheader("1. Search curriculum")
 
 query_text = st.text_input("Write a query to search contents of curriculum:", "")
 
-search_limit = 30
+# Add a slider for filtering an integer value
+text_search_limit = st.slider(
+    "Select an integer value",  # Label for the slider
+    min_value=0,               # Minimum value of the slider
+    max_value=100,             # Maximum value of the slider
+    value=30,                  # Default value
+    step=1                     # Step size
+)
 
 if query_text:
-    df_queried = query_vector(query_text)
+    df_queried = query_vectors(query_text, text_search_limit)
 
     colors = [subject_color_map[cat] for cat in df_queried['subject']]
 
