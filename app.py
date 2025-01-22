@@ -120,6 +120,9 @@ df_scatter = pd.read_csv(os.path.join(base_path, "data/embedding_2d_est_basic_sc
 df_scatter["hover_text"] = df_scatter["text"].replace("\n", "<br>")
 
 st.title("AI Curriculum Analyzer Demo")
+col1, col2, col3 = st.columns([1, 3, 1])  # Create three columns, with the center column being larger
+with col2:
+    st.image("static/banner.png", use_container_width =True)
 
 st.header("Purpose of This Demo")
 st.write("""
@@ -132,7 +135,7 @@ Think back to the days when people typed precise commands into black screens or 
 
 col1, col2, col3 = st.columns([1, 2, 1])  # Create three columns, with the center column being larger
 with col2:
-    st.image("static/generative_AI_two_aspects.jpg", caption="Image 1", use_container_width =True)
+    st.image("static/generative_AI_two_aspects.jpg", use_container_width =True)
 
 st.write("""
 Through this demo and presentation, we aim to emphasize the following key points:
@@ -154,37 +157,41 @@ By understanding the engineering behind the "magic," we encourage readers to exp
 # st.write("""We hope this demo shows that seemingly magical behaviors of generative AI are just combinations of the limited funcitonalities: searching texts and conducting commands based on the searched texts. 
 # And by knowing the engineering behind the magic, it would be great if the readers could come up with practical methods of curriculum analysis.""")
 
-st.header("Preparation of data")
+st.header("Preparation of Data")
 st.write("""
-To utilize generative AI in administrative curriculum analysis, documents need to be divided into smaller text units and stored in a database after being processed by a generative AI model.
-Each text is converted to a numerical expression so that generative AI models can search it easitly, which is called a vector or an embedding. 
+To effectively utilize generative AI in administrative curriculum analysis, documents must first be **divided into smaller text units** and then stored in a **database** after being processed by a generative AI model.
+
+Each text is then **converted into a numerical expression**, making it easier for generative AI models to search and process. This numerical representation is called a **vector** or **embedding**.
 """)
 
 col1, col2, col3 = st.columns([1, 2, 1])  # Create three columns, with the center column being larger
 with col2:
-    st.image("static/embedding_split.png", caption="Image 1", use_container_width =True)
+    st.image("static/embedding_split.png", use_container_width =True)
 
 st.write("""
-In this demo, the **national curricula** provided by the [Estonian Ministry of Education and Research](https://www.hm.ee/en/national-curricula) are used. The texts are divided roughly paragraph by paragraph and stored in the database with tags, such as **"subject"** or **"paragraph number"**, for efficient analysis and retrieval.
+In this demo, the **national curricula** provided by the [Estonian Ministry of Education and Research](https://www.hm.ee/en/national-curricula) are used. 
+
+The texts are **divided roughly by paragraph** and stored in the database with relevant **tags**, such as **"subject"** and **"paragraph number"**, to enable efficient **analysis** and **retrieval**.
 """)
 
-col1, col2 = st.columns([1, 1])  # Create three columns, with the center column being larger
-with col1:
-    st.image("static/est_basic_school_nat_cur_2014_appendix_1_final-images-0.jpg", caption="Image 2", use_container_width =True)
-
+col1, col2, col3, col4, col5 = st.columns([1, 2, 1, 2, 1])  # Create three columns, with the center column being larger
 with col2:
-    st.image("static/est_basic_school_nat_cur_2014_appendix_1_final-images-1.jpg", caption="Image 2", use_container_width =True)
+    st.image("static/est_basic_school_nat_cur_2014_appendix_1_final-images-0.jpg", use_container_width =True)
+
+with col4:
+    st.image("static/est_basic_school_nat_cur_2014_appendix_1_final-images-1.jpg", use_container_width =True)
 
 
 st.header("Search the curriculum")
 
 col1, col2, col3 = st.columns([1, 2, 1])  # Create three columns, with the center column being larger
 with col2:
-    st.image("static/text_query.jpg", caption="Image 1", use_container_width =True)
+    st.image("static/text_query.jpg", use_container_width =True)
 
 st.write("""
-After texts are store in a database, texts that are the most relavant or semantically the closest to an input query can be found from the database. 
-The following graphs show queried texts and their relavance scores to the query. They are also grouped by subjects at the right side. 
+After the texts are stored in the database, the most **relevant** or **semantically closest** texts to an input query can be found.
+
+The following graphs display the **queried texts** and their **relevance scores** relative to the query. These texts are also **grouped by subject** on the right side for easier analysis.
 """)
 
 query_text = st.text_input("Write a query to search contents of curriculum:", "Data literacy")
@@ -206,9 +213,9 @@ if query_text:
     fig_1 = make_subplots(
         rows=1,  # Increase the rows to 2
         cols=2,  # Keep the columns as 2 for the top row
-        column_widths=[0.2, 0.8],  # Set column widths for the first row
+        column_widths=[0.3, 0.7],  # Set column widths for the first row
         subplot_titles=(
-            r"# Relevant texts ot the query '{}'".format(query_text), 
+            "Relevant texts of the query '{}'".format(query_text), 
             "Searched texts grouped by subjects", 
             ),  # Titles for all subplots
         specs=[
@@ -236,12 +243,15 @@ if query_text:
     fig_1.update_layout(
         xaxis=dict(
             title='Relavance Score',  # Label for the x-axis
-            range=[0.5, 0.8]
+            range=[0.5, 0.8], 
+                tickfont=dict(
+                size=10  # Adjust the font size as desired
+            )
         ),
         yaxis=dict(
             tickmode='array',
             tickvals=[idx for idx in range(len(df_queried))],  # Custom y-ticks
-            ticktext=df_queried['text'][::-1].map(lambda x: x[:30] + "...")  # Use custom labels for y-axis
+            ticktext=df_queried['text'][::-1].map(lambda x: x[:20] + "...")  # Use custom labels for y-axis
         ), 
     )
 
@@ -263,7 +273,7 @@ if query_text:
     )
 
     fig_1.update_layout(
-        height=750,  # Set the height of the figure (increase as needed)
+        height=500,  # Set the height of the figure (increase as needed)
         hoverlabel=dict(
             align="left"  # Left-align the hover text
         ), 
@@ -307,12 +317,12 @@ st.header("Make a prompt with queried texts")
 
 col1, col2, col3 = st.columns([1, 2, 1])  # Create three columns, with the center column being larger
 with col2:
-    st.image("static/RAG.jpg", caption="Image 1", use_container_width =True)
+    st.image("static/RAG.jpg", use_container_width =True)
 
 st.write("""
-The queried texts can be processed with another prompt. 
-In the demo below, a query for searching texts from the databae can be set first. 
-And various tasks can be conducted on the texts searched. 
+The **queried texts** can be processed using another prompt. In the demo below, a query for searching texts from the database can be set first, followed by the ability to perform various **tasks** on the retrieved texts.
+
+This process is known as **RAG (Retrieval-Augmented Generation)**, and it is already widely used at the **product level**.
 """)
 
 rag_search_limit = st.slider("Select a number of texts to use for generating an answer", min_value=0, max_value=10, value=1, step=1)
@@ -374,10 +384,16 @@ fig_3 = px.scatter(
     y="y", 
     color="subject",  # Color by the subject column
     color_discrete_map=subject_color_map,  # Apply the custom color mapping
+    opacity=0.3, 
     hover_data={"hover_text": True, "paragraph_idx": False, "text": False, "subject":False, "x": False, "y": False},  # Replace with your hover text column name
     hover_name ="hover_text", 
-    title="Semantic map of texts in the database"
+    title="Semantic map of texts in the database", 
 )
+
+fig_3.update_traces(marker=dict(size=7.5,
+                              line=dict(width=.5,
+                                        color='black')),
+                  selector=dict(mode='markers'))
 
 # Remove x and y axes labels
 fig_3.update_layout(
@@ -385,20 +401,39 @@ fig_3.update_layout(
     yaxis_title="",   # Set y-axis label to an empty string
     xaxis=dict(showticklabels=False),  # Remove x-axis tick labels
     yaxis=dict(showticklabels=False),   # Remove y-axis tick labels
-    height=700,  # Set the height of the figure (increase as needed)
+    height=600,  # Set the height of the figure (increase as needed)
     hoverlabel=dict(
             align="left"  # Left-align the hover text
         )
 )
 
 
-st.header("Intermediate results for interdisciplinary analysis")
+st.header("Possibilities for Further Analysis")
+
+st.write("""
+In fact, the ideas discussed so far are not entirely new—they have developed rapidly in the **business domain** over the past few years. 
+
+Although **RAG (Retrieval-Augmented Generation)**, as explained in the previous section, is impressive, it essentially replaces manual work on individual texts.
+
+However, the concept of **storing curriculums in a database** and utilizing generative AI may unlock new possibilities for **academically intriguing analysis** of curriculums worldwide. 
+
+Since the texts are treated as **numeric expressions**, the **tendencies** and **relations** within curriculum statements can be analyzed from a more **macro-level perspective**.
+""")
+
+st.subheader("Interdisciplinary Idea Analysis")
 col1, col2, col3 = st.columns([1, 2, 1])  # Create three columns, with the center column being larger
 with col2:
-    st.image("static/interdisciplinary_analysis.jpg", caption="Image 1", use_container_width =True)
+    st.image("static/interdisciplinary_analysis.jpg", use_container_width =True)
 st.write("""
-The ideas so far are nothing new, and they developed rapidly in the business domain last some years. 
-But this idea
+One example of this type of analysis is the **detection of interdisciplinary ideas** in curriculums. 
+As shown earlier in this demo, generative AI can **calculate semantic relevance** or disparity between texts. 
+In other words, **distances between texts** can be calculated, which means some contents may form **clusters**.
+
+The graph below shows an intermediate result of the **interdisciplinary idea analysis**. 
+The **numeric expressions** of the texts saved in the database are plotted, with each dot representing a **paragraph** from the curriculums. The distance between two texts reflects the **semantic relevance** or **similarity** of those texts. 
+It’s natural for texts of the same **subject** to form a cluster, but interestingly, we also observe that contents from different subjects can be mixed together. 
+These mixed clusters, containing texts from multiple subjects, provide valuable **hints of interdisciplinary ideas**.
 """)
 st.plotly_chart(fig_3, use_container_width=True)
 
+st.header("Next Steps")
