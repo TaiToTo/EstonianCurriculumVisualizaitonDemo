@@ -119,15 +119,15 @@ base_path = os.path.dirname(__file__)
 df_scatter = pd.read_csv(os.path.join(base_path, "data/embedding_2d_est_basic_school.csv"))
 df_scatter["hover_text"] = df_scatter["text"].replace("\n", "<br>")
 
-st.title("Estonian School Curriculum Analyzer Demo")
+st.title("AI Curriculum Analyzer Demo")
 
 st.header("Purpose of This Demo")
 st.write("""
-After the ChatGPT sensation, introduction of generative AI is also actively being discussed in educaiton domain.
-However it seems like the "generative" aspect of generative AI is mainly discussed, for example chatbot or text generation. 
-Regardless of its name, generating contents is only a part of advantages that generative AI posseses. 
-After the times when people typed in commands like spelss on black screesn or when peopl clicked or dragged files to find information, now they can be found with relatively fuzzy commands in natural langauge. 
-And this "searching" feature of generative AI is something that should be on under spotlight more when we think about how to anlyse school curriculums.
+After the rise of **ChatGPT**, the potential of **generative AI** has become a popular topic of discussion, including in the education sector. However, most conversations seem to focus on the **"generative" aspect**—such as chatbots or text generation.
+
+While *content creation* is certainly a key advantage, it's only one part of what generative AI can offer. Beyond its name, the real power of generative AI lies in its ability to **transform how we interact with and retrieve information**.
+
+Think back to the days when people typed precise commands into black screens or navigated files by clicking and dragging. Now, thanks to generative AI, **information can be accessed with fuzzy, conversational prompts in natural language**. 
 """)
 
 col1, col2, col3 = st.columns([1, 2, 1])  # Create three columns, with the center column being larger
@@ -135,15 +135,24 @@ with col2:
     st.image("static/generative_AI_two_aspects.jpg", caption="Image 1", use_container_width =True)
 
 st.write("""
-Through this demo and presentations, we would like to emphasize the following points.
-- How efficiently texts of interest can be found by utilizing generative AI. 
-- How analysis on contents of searched texts can be automated.
-- How AI techniques can visulize relations of texts more intuitively.
-- Importance of preparation of texts from curriculums in an organized way.  
+Through this demo and presentation, we aim to emphasize the following key points:
+
+1. **Efficient Discovery**: How generative AI can quickly and efficiently locate texts of interest.  
+2. **Automated Analysis**: How the contents of searched texts can be analyzed automatically with minimal effort.  
+3. **Intuitive Visualization**: How AI techniques can visualize the relationships between texts in a more intuitive and meaningful way.  
+4. **Organized Data Preparation**: The importance of preparing curriculum texts in an organized and structured manner.  
+
+---
+
+We hope this demo demonstrates that the seemingly magical behaviors of generative AI are, at their core, just **combinations of limited functionalities**:  
+- **Searching texts**, and  
+- **Executing commands based on the searched texts**.  
+
+By understanding the engineering behind the "magic," we encourage readers to explore **practical methods for curriculum analysis** and unlock new opportunities in education.
 """)
 
-st.write("""We hope this demo shows that seemingly magical behaviors of generative AI are just combinations of the limited funcitonalities: searching texts and conducting commands based on the searched texts. 
-And by knowing the engineering behind the magic, it would be great if the readers could come up with practical methods of curriculum analysis.""")
+# st.write("""We hope this demo shows that seemingly magical behaviors of generative AI are just combinations of the limited funcitonalities: searching texts and conducting commands based on the searched texts. 
+# And by knowing the engineering behind the magic, it would be great if the readers could come up with practical methods of curriculum analysis.""")
 
 st.header("Preparation of data")
 st.write("""
@@ -166,19 +175,6 @@ with col1:
 with col2:
     st.image("static/est_basic_school_nat_cur_2014_appendix_1_final-images-1.jpg", caption="Image 2", use_container_width =True)
 
-# Create the subplots with an additional row for the bottom graph
-fig_1 = make_subplots(
-    rows=1,  # Increase the rows to 2
-    cols=2,  # Keep the columns as 2 for the top row
-    column_widths=[0.2, 0.8],  # Set column widths for the first row
-    subplot_titles=(
-        "The most relevant texts", 
-        "Searched texts grouped by subjects", 
-        ),  # Titles for all subplots
-    specs=[
-        [{"type": "xy"}, {"type": "domain"}],  # First row specs
-    ]
-)
 
 st.header("Search the curriculum")
 
@@ -206,6 +202,20 @@ if query_text:
 
     colors = [subject_color_map[cat] for cat in df_queried['subject']]
 
+    # Create the subplots with an additional row for the bottom graph
+    fig_1 = make_subplots(
+        rows=1,  # Increase the rows to 2
+        cols=2,  # Keep the columns as 2 for the top row
+        column_widths=[0.2, 0.8],  # Set column widths for the first row
+        subplot_titles=(
+            r"# Relevant texts ot the query '{}'".format(query_text), 
+            "Searched texts grouped by subjects", 
+            ),  # Titles for all subplots
+        specs=[
+            [{"type": "xy"}, {"type": "domain"}],  # First row specs
+        ]
+    )
+
     # Add bar plot to the first column
     fig_1.add_trace(
         go.Bar(
@@ -216,12 +226,12 @@ if query_text:
             textposition='outside',
             marker=dict(color=colors[::-1]), 
             hovertext=df_queried['hover_text'][::-1], 
-            hoverinfo='text' 
+            hoverinfo='text' , 
+            # title="The most relevant text to the query {}".format(query_text)
         ),
         row=1,
         col=1
     )
-
 
     fig_1.update_layout(
         xaxis=dict(
@@ -232,7 +242,7 @@ if query_text:
             tickmode='array',
             tickvals=[idx for idx in range(len(df_queried))],  # Custom y-ticks
             ticktext=df_queried['text'][::-1].map(lambda x: x[:30] + "...")  # Use custom labels for y-axis
-        )
+        ), 
     )
 
     unique_subject_list = df_queried["subject"].unique().tolist()
@@ -256,11 +266,24 @@ if query_text:
         height=750,  # Set the height of the figure (increase as needed)
         hoverlabel=dict(
             align="left"  # Left-align the hover text
-        )
+        ), 
     )
 
 else:
-    pass
+    # Create the subplots with an additional row for the bottom graph
+    fig_1 = make_subplots(
+        rows=1,  # Increase the rows to 2
+        cols=2,  # Keep the columns as 2 for the top row
+        column_widths=[0.2, 0.8],  # Set column widths for the first row
+        subplot_titles=(
+            "The most relevant texts ot the query '{}'".format(), 
+            "Searched texts grouped by subjects", 
+            ),  # Titles for all subplots
+        specs=[
+            [{"type": "xy"}, {"type": "domain"}],  # First row specs
+        ]
+    )
+
     # Add bar plot to the first column
     fig_1.add_trace(
         go.Bar(
