@@ -127,9 +127,7 @@ with col2:
 st.header("Purpose of This Demo")
 st.write("""
 After the rise of **ChatGPT**, the potential of **generative AI** has become a popular topic of discussion, including in the education sector. However, most conversations seem to focus on the **"generative" aspect**—such as chatbots or text generation.
-
 While *content creation* is certainly a key advantage, it's only one part of what generative AI can offer. Beyond its name, the real power of generative AI lies in its ability to **transform how we interact with and retrieve information**.
-
 Think back to the days when people typed precise commands into black screens or navigated files by clicking and dragging. Now, thanks to generative AI, **information can be accessed with fuzzy, conversational prompts in natural language**. 
 """)
 
@@ -141,15 +139,12 @@ st.write("""
 Through this demo and presentation, we aim to emphasize the following key points:
 
 1. **Efficient Discovery**: How generative AI can quickly and efficiently locate texts of interest.  
-2. **Automated Analysis**: How the contents of searched texts can be analyzed automatically with minimal effort.  
+2. **Automated Process**: How the contents of searched texts can be processed automatically with minimal effort.  
 3. **Intuitive Visualization**: How AI techniques can visualize the relationships between texts in a more intuitive and meaningful way.  
-4. **Organized Data Preparation**: The importance of preparing curriculum texts in an organized and structured manner.  
 
----
-
-We hope this demo demonstrates that the seemingly magical behaviors of generative AI are, at their core, just **combinations of limited functionalities**:  
+We hope this demo demonstrates that the seemingly magical behaviors of products with generative AI are, at their core, just **combinations of limited functionalities**:  
 - **Searching texts**, and  
-- **Executing commands based on the searched texts**.  
+- **Executing commands to process the searched texts**.  
 
 By understanding the engineering behind the "magic," we encourage readers to explore **practical methods for curriculum analysis** and unlock new opportunities in education.
 """)
@@ -160,7 +155,6 @@ By understanding the engineering behind the "magic," we encourage readers to exp
 st.header("Preparation of Data")
 st.write("""
 To effectively utilize generative AI in administrative curriculum analysis, documents must first be **divided into smaller text units** and then stored in a **database** after being processed by a generative AI model.
-
 Each text is then **converted into a numerical expression**, making it easier for generative AI models to search and process. This numerical representation is called a **vector** or **embedding**.
 """)
 
@@ -170,7 +164,6 @@ with col2:
 
 st.write("""
 In this demo, the **national curricula** provided by the [Estonian Ministry of Education and Research](https://www.hm.ee/en/national-curricula) are used. 
-
 The texts are **divided roughly by paragraph** and stored in the database with relevant **tags**, such as **"subject"** and **"paragraph number"**, to enable efficient **analysis** and **retrieval**.
 """)
 
@@ -190,7 +183,6 @@ with col2:
 
 st.write("""
 After the texts are stored in the database, the most **relevant** or **semantically closest** texts to an input query can be found.
-
 The following graphs display the **queried texts** and their **relevance scores** relative to the query. These texts are also **grouped by subject** on the right side for easier analysis.
 """)
 
@@ -321,13 +313,12 @@ with col2:
 
 st.write("""
 The **queried texts** can be processed using another prompt. In the demo below, a query for searching texts from the database can be set first, followed by the ability to perform various **tasks** on the retrieved texts.
-
 This process is known as **RAG (Retrieval-Augmented Generation)**, and it is already widely used at the **product level**.
 """)
 
-rag_search_limit = st.slider("Select a number of texts to use for generating an answer", min_value=0, max_value=10, value=1, step=1)
+rag_search_limit = st.slider("TOP n relevant texts used", min_value=0, max_value=10, value=1, step=1)
 # Input fields for two texts
-query_text = st.text_input("Write a query to find reference texts", "Data literacy", placeholder="Type something here...")
+query_text = st.text_input("Write a query to find relevant texts", "Data literacy", placeholder="Type something here...")
 task_text = st.text_input("Write a prompt based on the texts queried:", "Extract competency from the text", placeholder="Type something here...")
 
 # Button to combine texts
@@ -412,11 +403,8 @@ st.header("Possibilities for Further Analysis")
 
 st.write("""
 In fact, the ideas discussed so far are not entirely new—they have developed rapidly in the **business domain** over the past few years. 
-
 Although **RAG (Retrieval-Augmented Generation)**, as explained in the previous section, is impressive, it essentially replaces manual work on individual texts.
-
 However, the concept of **storing curriculums in a database** and utilizing generative AI may unlock new possibilities for **academically intriguing analysis** of curriculums worldwide. 
-
 Since the texts are treated as **numeric expressions**, the **tendencies** and **relations** within curriculum statements can be analyzed from a more **macro-level perspective**.
 """)
 
@@ -428,7 +416,6 @@ st.write("""
 One example of this type of analysis is the **detection of interdisciplinary ideas** in curriculums. 
 As shown earlier in this demo, generative AI can **calculate semantic relevance** or disparity between texts. 
 In other words, **distances between texts** can be calculated, which means some contents may form **clusters**.
-
 The graph below shows an intermediate result of the **interdisciplinary idea analysis**. 
 The **numeric expressions** of the texts saved in the database are plotted, with each dot representing a **paragraph** from the curriculums. The distance between two texts reflects the **semantic relevance** or **similarity** of those texts. 
 It’s natural for texts of the same **subject** to form a cluster, but interestingly, we also observe that contents from different subjects can be mixed together. 
@@ -437,3 +424,33 @@ These mixed clusters, containing texts from multiple subjects, provide valuable 
 st.plotly_chart(fig_3, use_container_width=True)
 
 st.header("Next Steps")
+
+st.write("""
+I hope this demo has shown the basic functionality of generative AI: searching texts and processing them.
+In other words, what texts to store in the database, what texts to search, what to conduct on each texts, and how to visualize them: they are all designed and implemented by humans. 
+  
+To clarify, let’s break down the types of curricula into two main categories:  
+- **Administrative curriculum**: General teaching guidelines provided by educational authorities in different countries or regions.  
+- **Practical curriculum**: Specific plans created by school teachers, including schedules and detailed teaching content.  
+
+The following steps could be considered to apply generative AI on curriculum analysis and generation.
+
+### 1. **Preparing the Data**  
+In this demo, texts are divided paragraph by paragraph. Ideally, though, the data should be organized into sections with labels like:  
+- "Subject"  
+- "Country"  
+- "Language"  
+- "Age group"  
+- "Goals"  
+- "Content"  
+
+Since each country has its own curriculum structure, it’s important to study these differences and develop a standardized framework for organizing them.
+
+### 2. **Analyzing Administrative Curricula**  
+Analyzing administrative curricula can provide valuable insights. For example, with a well-organized database (as described in step 1), even a simple dashboard could reveal useful trends or patterns.
+More advanced analysis—such as those mentioned in the "Possibilities for Further Analysis" section—could offer deeper academic insights.
+
+### 3. **Generating Practical Curricula**  
+This step focuses on creating usable curriculum plans for teachers. Since this involves fewer risks, it’s already possible to build tools for teachers that are simple and intuitive.
+Initially, this doesn’t require the structured data from step 1, so it can be developed independently. Over time, it could be enhanced by combining it with the analysis in step 2. For example, teachers could explore curricula from other subjects or countries to get ideas and then tailor their own plans.
+""")
