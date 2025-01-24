@@ -8,7 +8,7 @@ import weaviate
 from weaviate.classes.config import Configure
 from weaviate.classes.init import Auth
 from weaviate.classes.query import MetadataQuery
-
+from weaviate.classes.query import Filter
 
 import sys
 import os
@@ -27,7 +27,7 @@ weaviate_url = os.environ["WEAVIATE_URL"]
 weaviate_api_key = os.environ["WEAVIATE_API_KEY"]
 cohere_api_key = os.environ["COHERE_API_KEY"]
 
-def query_vectors(query_text, search_limit):
+def query_vectors(query_text, search_limit, selected_subjects):
     class_name = "CurriculumDemo"
         # Connect to Weaviate Cloud
     client = weaviate.connect_to_weaviate_cloud(
@@ -38,10 +38,15 @@ def query_vectors(query_text, search_limit):
 
     collection = client.collections.get("CurriculumDemo")
 
+    object_filter_list = [Filter.by_property("subject").equal(subject) for subject in selected_subjects]
+
     response = collection.query.near_text(
         query=query_text,
         limit=search_limit, 
-        return_metadata=MetadataQuery(distance=True, certainty=True)
+        return_metadata=MetadataQuery(distance=True, certainty=True), 
+        filters=(
+            Filter.any_of(object_filter_list)
+        )
     )
 
     client.close()  # Free up resources
@@ -213,16 +218,22 @@ The following graphs display the **queried texts** and their **relevance scores*
 
 query_text = st.text_input("Write a query to search contents of curriculum:", "Data literacy")
 
-text_search_limit = st.slider(
-    "Select a number of texts to query",  # Label for the slider
-    min_value=0,               # Minimum value of the slider
-    max_value=100,             # Maximum value of the slider
-    value=30,                  # Default value
-    step=1                     # Step size
+text_search_limit = st.slider("Select a number of texts to query", 
+                              min_value=0, 
+                              max_value=100, 
+                              value=30, 
+                              step=1
+                              )
+
+# Multi-select filter
+selected_subjects = st.multiselect(
+    "Select subjects to filter:",
+    options=subject_color_map.keys(),  
+    default=subject_color_map.keys(),  
 )
 
-if query_text:
-    df_queried = query_vectors(query_text, text_search_limit)
+if query_text :
+    df_queried = query_vectors(query_text, text_search_limit, selected_subjects)
 
     colors = [subject_color_map[cat] for cat in df_queried['subject']]
 
@@ -462,7 +473,7 @@ The following steps could be considered to apply generative AI on curriculum ana
 """
 )
 
-st.subheader("1. Preparing the Data")  
+st.subheader("1. Organizing the Data")  
 st.write("""
 In this demo, texts are divided paragraph by paragraph. Ideally, though, the data should be organized into sections with labels like:  
 - "Subject"  
@@ -473,6 +484,7 @@ In this demo, texts are divided paragraph by paragraph. Ideally, though, the dat
 - "Content"  
          
 Since each country has its own curriculum structure, it’s important to study these differences and develop a standardized framework for organizing them.
+Also "noises" in texts should be removed, for example page numbers, section numbers. 
 """)
 
 st.subheader("2. Analyzing Administrative Curricula")
