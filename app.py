@@ -132,6 +132,8 @@ st.title("AI Curriculum Analyzer Demo")
 # Table of Contents
 st.sidebar.title("Table of Contents")
 st.sidebar.markdown("""
+- [Terms](#terms)
+- [Background](#background)
 - [Purpose of This Demo](#purpose-of-this-demo)
 - [Preparation of Data](#preparation-of-data)
 - [Search the Curriculum](#search-the-curriculum)
@@ -140,8 +142,9 @@ st.sidebar.markdown("""
     - [Interdisciplinary Idea Analysis](#interdisciplinary-idea-analysis)
 - [Next Steps](#next-steps)
     - [1. Preparing the Data](#1-preparing-the-data)
-    - [2. Analyzing Administrative Curricula](#2-analyzing-administrative-curricula)
-    - [3. Generating Practical Curricula](#3-generating-practical-curricula)
+    - [2. Analyzing Curriculum](#2-analyzing-curriculum)
+    - [3. Generating Teaching Guideline](#3-generating-teaching-guideline)
+    - [4. Evaluation on Generative AI](#4-evaluation-on-generative-ai)
 """, unsafe_allow_html=True)
 
 col1, col2, col3 = st.columns([1, 3, 1])  # Create three columns, with the center column being larger
@@ -152,6 +155,28 @@ with col2:
 with open('stored_samples.txt') as f:
     loaded_data = ast.literal_eval(f.read())
 
+st.header("Terms")
+st.write("""
+To clarify, let’s break down the types of curricula into two main categories:  
+- **Curriculum or national curriculum**:Educational policies released by authorities in different countries or regions.  
+- **Teaching guidelines**: Specific plans created by school teachers, including schedules and detailed teaching content.  
+""")
+
+st.header("Background")
+st.write("""
+Curriculum overload remains a persistent issue in education, overwhelming teachers and students and hindering deep learning.
+Interdisciplinary learning offers a solution by integrating concepts from various subjects to promote holistic understanding.
+
+Collaboration among teachers across disciplines can be a solution for implementing such approaches effectively. 
+For example, learning statistics with highly simplified data in math classes can be boring for many students. 
+Teaching geographical or social facts through data visualization can capture more students' attention, and integrating programming workshops can further enhance engagement.
+However, requiring teachers to incorporate such interdisciplinarity could add further burden to their already hectic work environment. 
+
+AI can assist policymakers and educators by streamlining curriculum design, fostering collaboration, and supporting interdisciplinary methods, leading to more balanced and engaging education.
+""")
+col1, col2, col3 = st.columns([1, 2, 1])  # Create three columns, with the center column being larger
+with col2:
+    st.image("static/transversally_divided_curriculum.png", use_container_width =True)
 
 st.header("Purpose of This Demo")
 st.write("""
@@ -183,7 +208,7 @@ By understanding the engineering behind the "magic," we encourage readers to exp
 
 st.header("Preparation of Data")
 st.write("""
-To effectively utilize generative AI in administrative curriculum analysis, documents must first be **divided into smaller text units** and then stored in a **database** after being processed by a generative AI model.
+To effectively utilize generative AI in curriculum analysis, documents must first be **divided into smaller text units** and then stored in a **database** after being processed by a generative AI model.
 Each text is then **converted into a numerical expression**, making it easier for generative AI models to search and process. This numerical representation is called a **vector** or **embedding**.
 """)
 
@@ -192,7 +217,7 @@ with col2:
     st.image("static/embedding_split.png", use_container_width =True)
 
 st.write("""
-In this demo, the **national curricula** provided by the [Estonian Ministry of Education and Research](https://www.hm.ee/en/national-curricula) are used. 
+In this demo, the **national curricula** or basic shools provided by the [Estonian Ministry of Education and Research](https://www.hm.ee/en/national-curricula) are used. 
 The texts are **divided roughly by paragraph** and stored in the database with relevant **tags**, such as **"subject"** and **"paragraph number"**, to enable efficient **analysis** and **retrieval**.
 The first 10 sample texts stored can be also found below. 
 """)
@@ -357,18 +382,20 @@ This process is known as **RAG (Retrieval-Augmented Generation)**, and it is alr
 rag_search_limit = st.slider("TOP n relevant texts used", min_value=0, max_value=10, value=1, step=1)
 # Input fields for two texts
 query_text = st.text_input("Write a query to find relevant texts", "Data literacy", placeholder="Type something here...")
-task_text = st.text_input("Write a prompt based on the texts queried:", "Extract competency from the text", placeholder="Type something here...")
+# task_text = st.text_input("Write a prompt based on the texts queried:", "Extract competency from the text", placeholder="Type something here...")
 
 # Button to combine texts
 if st.button("Make a prompt"):
-    if query_text and task_text:
+    if query_text:
         # Combine the texts and output the result
-        generated_text, df_ref = get_rag_answer_and_sources(query_text, task_text, rag_search_limit)
+        generated_text, df_ref = get_rag_answer_and_sources(query_text, query_text, rag_search_limit)
 
         st.markdown("### Generated answer:")
         st.write(generated_text)
 
         unique_subject_list = df_ref["subject"].unique().tolist()
+        print(unique_subject_list)
+
         colors = [subject_color_map[cat] for cat in unique_subject_list + df_ref['subject'].tolist()]
 
         fig_2 = go.Figure()
@@ -510,12 +537,7 @@ st.header("Next Steps")
 st.write("""
 I hope this demo has shown the basic functionality of generative AI: searching texts and processing them.
 In other words, what texts to store in the database, what texts to search, what to conduct on each texts, and how to visualize them: they are all designed and implemented by humans. 
-  
-To clarify, let’s break down the types of curricula into two main categories:  
-- **Administrative curriculum**: General teaching guidelines provided by educational authorities in different countries or regions.  
-- **Practical curriculum**: Specific plans created by school teachers, including schedules and detailed teaching content.  
-
-The following steps could be considered to apply generative AI on curriculum analysis and generation.
+To extend the ideas introduced so far, the following steps could be considered to apply generative AI on curriculum analysis and generation.
 """
 )
 
@@ -533,14 +555,25 @@ Since each country has its own curriculum structure, it’s important to study t
 Also "noises" in texts should be removed, for example page numbers, section numbers. 
 """)
 
-st.subheader("2. Analyzing Administrative Curricula")
+st.subheader("2. Analyzing Curriculum")
 st.write("""
-Analyzing administrative curricula can provide valuable insights. For example, with a well-organized database (as described in step 1), even a simple dashboard could reveal useful trends or patterns.
+Analyzing  curriculum can provide valuable insights. For example, with a well-organized database (as described in step 1), even a simple dashboard could reveal useful trends or patterns.
 More advanced analysis—such as those mentioned in the "Possibilities for Further Analysis" section—could offer deeper academic insights.
 """)
 
-st.subheader("3. Generating Practical Curricula")
+st.subheader("3. Generating Teching Guidelines")
 st.write("""
 This step focuses on creating usable curriculum plans for teachers. Since this involves fewer risks, it’s already possible to build tools for teachers that are simple and intuitive.
 Initially, this doesn’t require the structured data from step 1, so it can be developed independently. Over time, it could be enhanced by combining it with the analysis in step 2. For example, teachers could explore curricula from other subjects or countries to get ideas and then tailor their own plans.
+""")
+
+st.subheader("4. Evaluation on Generative AI")
+st.write("""
+Evaluating the performance and effectiveness of generative AI models is critical to understanding their capabilities and limitations. Here are three main approaches to evaluate generative AI outputs:
+
+- **Evaluate the Generated Outputs Themselves**  
+   This is the most direct method. In this approach, domain experts prepare ideal answers to specific prompts, and the outputs generated by the AI are compared against these expert-provided answers. The comparison can be conducted using numerical metrics such as relevance scores or by leveraging advanced generative AI models to assess the quality and alignment of the outputs against the ideal answers.
+
+- **Evaluate Which Texts Are Searched to Generate Outputs**  
+   A more quantitative and robust approach involves analyzing how well the generative AI model identifies and utilizes relevant texts to generate its outputs. This method is particularly useful in scenarios where the AI is tasked with retrieving or synthesizing information across multiple languages, as it measures the accuracy and relevance of the AI's text-sourcing capabilities.
 """)
