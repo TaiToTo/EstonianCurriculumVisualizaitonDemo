@@ -13,6 +13,7 @@ from weaviate.classes.query import MetadataQuery
 import sys
 import os
 import json
+import ast
 
 # Needed when you run this locally
 from dotenv import load_dotenv
@@ -131,11 +132,19 @@ st.sidebar.markdown("""
 - [Possibilities for Further Analysis](#possibilities-for-further-analysis)
     - [Interdisciplinary Idea Analysis](#interdisciplinary-idea-analysis)
 - [Next Steps](#next-steps)
+    - [1. Preparing the Data](#1-preparing-the-data)
+    - [2. Analyzing Administrative Curricula](#2-analyzing-administrative-curricula)
+    - [3. Generating Practical Curricula](#3-generating-practical-curricula)
 """, unsafe_allow_html=True)
 
 col1, col2, col3 = st.columns([1, 3, 1])  # Create three columns, with the center column being larger
 with col2:
     st.image("static/banner.png", use_container_width =True)
+
+
+with open('stored_samples.txt') as f:
+    loaded_data = ast.literal_eval(f.read())
+
 
 st.header("Purpose of This Demo")
 st.write("""
@@ -178,6 +187,7 @@ with col2:
 st.write("""
 In this demo, the **national curricula** provided by the [Estonian Ministry of Education and Research](https://www.hm.ee/en/national-curricula) are used. 
 The texts are **divided roughly by paragraph** and stored in the database with relevant **tags**, such as **"subject"** and **"paragraph number"**, to enable efficient **analysis** and **retrieval**.
+The first 10 sample texts stored can be also found below. 
 """)
 
 col1, col2, col3, col4, col5 = st.columns([1, 2, 1, 2, 1])  # Create three columns, with the center column being larger
@@ -186,6 +196,8 @@ with col2:
 
 with col4:
     st.image("static/est_basic_school_nat_cur_2014_appendix_1_final-images-1.jpg", use_container_width =True)
+
+st.json(loaded_data, expanded=False)
 
 
 st.header("Search the Curriculum")
@@ -447,8 +459,11 @@ To clarify, let’s break down the types of curricula into two main categories:
 - **Practical curriculum**: Specific plans created by school teachers, including schedules and detailed teaching content.  
 
 The following steps could be considered to apply generative AI on curriculum analysis and generation.
+"""
+)
 
-### 1. **Preparing the Data**  
+st.subheader("1. Preparing the Data")  
+st.write("""
 In this demo, texts are divided paragraph by paragraph. Ideally, though, the data should be organized into sections with labels like:  
 - "Subject"  
 - "Country"  
@@ -456,14 +471,18 @@ In this demo, texts are divided paragraph by paragraph. Ideally, though, the dat
 - "Age group"  
 - "Goals"  
 - "Content"  
-
+         
 Since each country has its own curriculum structure, it’s important to study these differences and develop a standardized framework for organizing them.
+""")
 
-### 2. **Analyzing Administrative Curricula**  
+st.subheader("2. Analyzing Administrative Curricula")
+st.write("""
 Analyzing administrative curricula can provide valuable insights. For example, with a well-organized database (as described in step 1), even a simple dashboard could reveal useful trends or patterns.
 More advanced analysis—such as those mentioned in the "Possibilities for Further Analysis" section—could offer deeper academic insights.
+""")
 
-### 3. **Generating Practical Curricula**  
+st.subheader("3. Generating Practical Curricula")
+st.write("""
 This step focuses on creating usable curriculum plans for teachers. Since this involves fewer risks, it’s already possible to build tools for teachers that are simple and intuitive.
 Initially, this doesn’t require the structured data from step 1, so it can be developed independently. Over time, it could be enhanced by combining it with the analysis in step 2. For example, teachers could explore curricula from other subjects or countries to get ideas and then tailor their own plans.
 """)
