@@ -123,7 +123,9 @@ st.set_page_config(layout="wide")
 base_path = os.path.dirname(__file__)
 
 df_scatter = pd.read_csv(os.path.join(base_path, "data/embedding_2d_est_basic_school.csv"))
-df_scatter["hover_text"] = df_scatter["text"].replace("\n", "<br>")
+# df_scatter["hover_text"] = df_scatter["text"].replace("\n", "<br>")
+color_list = [subject_color_map[row["subject"]] for _, row in df_scatter.iterrows()]
+hover_texts = [row["text"].replace("\n", "<br>") for _, row in df_scatter.iterrows()]
 
 st.title("AI Curriculum Analyzer Demo")
 
@@ -405,33 +407,77 @@ if st.button("Make a prompt"):
 
 
 
-fig_3 = px.scatter(
-    df_scatter, 
-    x="x", 
-    y="y", 
-    color="subject",  # Color by the subject column
-    color_discrete_map=subject_color_map,  # Apply the custom color mapping
-    opacity=0.3, 
-    hover_data={"hover_text": True, "paragraph_idx": False, "text": False, "subject":False, "x": False, "y": False},  # Replace with your hover text column name
-    hover_name ="hover_text", 
-    title="Semantic map of texts in the database", 
-)
+# fig_3 = px.scatter(
+#     df_scatter, 
+#     x="x", 
+#     y="y", 
+#     color="subject",  # Color by the subject column
+#     color_discrete_map=subject_color_map,  # Apply the custom color mapping
+#     opacity=0.3, 
+#     hover_data={"hover_text": True, "paragraph_idx": False, "text": False, "subject":False, "x": False, "y": False},  # Replace with your hover text column name
+#     hover_name ="hover_text", 
+#     title="Semantic map of texts in the database", 
+# )
 
-fig_3.update_traces(marker=dict(size=7.5,
-                              line=dict(width=.5,
-                                        color='black')),
-                  selector=dict(mode='markers'))
+# fig_3.update_traces(marker=dict(size=7.5,
+#                               line=dict(width=.5,
+#                                         color='black')),
+#                   selector=dict(mode='markers'))
 
-# Remove x and y axes labels
+# # Remove x and y axes labels
+# fig_3.update_layout(
+#     xaxis_title="",  # Set x-axis label to an empty string
+#     yaxis_title="",   # Set y-axis label to an empty string
+#     xaxis=dict(showticklabels=False),  # Remove x-axis tick labels
+#     yaxis=dict(showticklabels=False),   # Remove y-axis tick labels
+#     height=600,  # Set the height of the figure (increase as needed)
+#     hoverlabel=dict(
+#             align="left"  # Left-align the hover text
+#         )
+# )
+
+
+# Create the scatter plot
+fig_3 = go.Figure()
+
+# Add the scatter trace with hover text
+fig_3.add_trace(go.Scatter(
+    x=df_scatter["x"],
+    y=df_scatter["y"],
+    mode='markers',
+    marker=dict(
+        color=color_list,
+        size=6
+    ),
+    text=hover_texts,  # Add hover text
+    hoverinfo='text',  # Display only the hover text
+    name="Scatter Points"
+))
+
+# Add legend items for each subject
+for subject, color in subject_color_map.items():
+    fig_3.add_trace(go.Scatter(
+        x=[None], y=[None],  # Dummy points for legend
+        mode='markers',
+        marker=dict(size=10, color=color),
+        name=subject
+    ))
+
+# Update layout
 fig_3.update_layout(
-    xaxis_title="",  # Set x-axis label to an empty string
-    yaxis_title="",   # Set y-axis label to an empty string
-    xaxis=dict(showticklabels=False),  # Remove x-axis tick labels
-    yaxis=dict(showticklabels=False),   # Remove y-axis tick labels
-    height=600,  # Set the height of the figure (increase as needed)
+    title="Semantic map of paragraphs in Estonian basic school curriculum",
+    legend_title="Subjects",
+    legend=dict(x=1.05, y=1),
+    margin=dict(t=40, l=0, r=150, b=40),
+    width=600,
+    height=600,
+    hovermode='closest',
     hoverlabel=dict(
-            align="left"  # Left-align the hover text
-        )
+        bgcolor="white",
+        font_size=12,
+        font_family="Arial",
+        align="left"
+    )
 )
 
 
