@@ -120,6 +120,19 @@ df_scatter = pd.read_csv(os.path.join(base_path, "data/embedding_2d_est_basic_sc
 df_scatter["hover_text"] = df_scatter["text"].replace("\n", "<br>")
 
 st.title("AI Curriculum Analyzer Demo")
+
+# Table of Contents
+st.sidebar.title("Table of Contents")
+st.sidebar.markdown("""
+- [Purpose of This Demo](#purpose-of-this-demo)
+- [Preparation of Data](#preparation-of-data)
+- [Search the Curriculum](#search-the-curriculum)
+- [Make a Prompt with Queried Texts](#make-a-prompt-with-queried-texts)
+- [Possibilities for Further Analysis](#possibilities-for-further-analysis)
+    - [Interdisciplinary Idea Analysis](#interdisciplinary-idea-analysis)
+- [Next Steps](#next-steps)
+""", unsafe_allow_html=True)
+
 col1, col2, col3 = st.columns([1, 3, 1])  # Create three columns, with the center column being larger
 with col2:
     st.image("static/banner.png", use_container_width =True)
@@ -175,7 +188,7 @@ with col4:
     st.image("static/est_basic_school_nat_cur_2014_appendix_1_final-images-1.jpg", use_container_width =True)
 
 
-st.header("Search the curriculum")
+st.header("Search the Curriculum")
 
 col1, col2, col3 = st.columns([1, 2, 1])  # Create three columns, with the center column being larger
 with col2:
@@ -305,7 +318,7 @@ else:
 # Streamlit app
 st.plotly_chart(fig_1, use_container_width=True)
 
-st.header("Make a prompt with queried texts")
+st.header("Make a Prompt with Queried Texts")
 
 col1, col2, col3 = st.columns([1, 2, 1])  # Create three columns, with the center column being larger
 with col2:
